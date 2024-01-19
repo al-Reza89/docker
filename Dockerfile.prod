@@ -1,0 +1,33 @@
+# if node 20 work on my machine, then it should work on the server as well 
+FROM node:20.1.0
+
+# set working directory
+WORKDIR /app
+
+# copy package.json or package-lock.json to the working directory
+COPY package*.json .
+
+# first we copy the package.json file to the working directory because docker caches the dependencies and if we change the code, it will not install the dependencies again unless we change the package.json file  (this is a good thing because it saves time) 
+COPY . .
+
+
+# install dependencies 
+RUN npm install
+
+
+# for the production environment, we need to build the react app
+RUN npm run build
+
+# by default nextjs runs on port 3000, but we can't change it by setting the port environment variable
+ENV port=3000
+
+# expose port 3000 
+EXPOSE 3000
+
+
+# run the app
+CMD ["npm", "run","start"]
+
+
+
+

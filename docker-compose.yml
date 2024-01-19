@@ -1,0 +1,35 @@
+# varient of docker-compose
+
+version: "3.8"
+
+# define services here
+services:
+  # i give the service name client-dev you can give any name you want
+  client-dev:
+    # build is the path of the dockerfile
+    build:
+      context: .
+      # name of the dockerfile
+      dockerfile: Dockerfile.dev
+    # ports is the port mapping of the container first port is the port of the container and second port is the port of the local machine that are defined in the dockerfile
+    ports:
+      - "3000:3000"
+
+    # volumes are for caching the data so that we don't have to rebuild the image again and again
+    volumes:
+      # .:/app means that the current directory is copy or we should say map to the /app directory of the container and /app/node_modules is the directory that we don't want to map to the container.
+      - .:/app
+      - /app/node_modules
+
+    env_file:
+      - .env.local
+
+  # for production build
+  client-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "4000:3000"
+    env_file:
+      - .env
