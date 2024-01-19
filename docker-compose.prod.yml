@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  # app-prod is the name of the container
+  app-prod:
+    build:
+      # context is the path to the Dockerfile
+      context: .
+      # dockerfile is the name of the Dockerfile
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:80"
+    # in the production we don't need to mount the volume
