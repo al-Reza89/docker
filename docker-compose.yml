@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  # first pull mongo image from docker hub we can name it anything we want but we will name it mongo for simplicity
+  mongo:
+    # this image name is actually refering to the image name in docker hub
+    image: mongo
+    # container name is the name of the container that will be created from the image we pulled this could be anything but we will name it mongo for simplicity
+    container_name: mongo
+    # ports is used to map the port of the container to the port of the host machine so we can access the container from the host machine
+    ports:
+      - 27017:27017
+    # volumes is used to persist data in the container to the host machine because if we don't use volumes the data will be lost when the container is stopped or removed so we will create a folder called data in the same directory as the docker-compose.yml file and we will mount it to the /data/db directory in the container which is the default directory for mongo to store data.
+    volumes:
+      - mongo-data:/data/db
+
+  # backend service
+  api:
+    # build path is the path to the Dockerfile of the backend service
+    build: ./api
+    # container name is the name of the container that will be created from the image we built this could be anything but we will name it api_c for simplicity
+    container_name: api_c
+    ports:
+      - 4000:4000
+    # depends_on is used to make sure that the mongo container is up and running before the api container starts
+    depends_on:
+      - mongo
+    volumes:
+      # ./api is the path to the backend service code and /app is the directory of the container which i give over to the api/Dockerfile as the working directory
+      - ./api:/app
+      # we don't need to persist node_modules because we can install them using npm install command
+      - /app/node_modules
+    # environment variables are used to pass environment variables to the container
+    environment:
+      # we can name the database anything we want but we will name it mydb for simplicity
+      - MONGO_URL=mongodb://mongo:27017/mydb
+
+  # frontend service
+  client:
+    # build path is the path to the Dockerfile of the frontend service
+    build: ./client
+    # container name is the name of the container that will be created from the image we built this could be anything but we will name it client_c for simplicity
+    container_name: client_c
+
+    # stdin_open and tty is used to keep the container running after it starts
+    stdin_open: true
+    tty: true
+    ports:
+      - 3000:3000
+    # depends_on is used to make sure that the api container is up and running before the client container starts
+    depends_on:
+      - api
+    volumes:
+      # ./client is the path to the frontend service code and /client is the directory of the container which i give over to the client/Dockerfile as the working directory.
+      - ./client:/client
+      - /client/node_modules
+
+# this volume is used to persist data in the mongo container to the host machine
+volumes:
+  # previously we created a volume called mongo-data and we mounted it to the /data/db directory in the mongo container so we will use the same volume here
+  mongo-data:
